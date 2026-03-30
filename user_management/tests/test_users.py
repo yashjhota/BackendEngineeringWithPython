@@ -5,7 +5,9 @@ from database import Base, get_db
 from main import app
 
 # separate test database — never test against your real DB
-TEST_DATABASE_URL = "postgresql://postgres:YASHJHOTA@localhost:5432/user_management_test"
+TEST_DATABASE_URL = (
+    "postgresql://postgres:YASHJHOTA@localhost:5432/user_management_test"
+)
 
 engine = create_engine(TEST_DATABASE_URL)
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
