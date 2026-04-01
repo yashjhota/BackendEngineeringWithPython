@@ -1,6 +1,7 @@
 from pydantic import BaseModel, EmailStr
 from typing import Optional
 from datetime import datetime
+from pydantic import ConfigDict
 
 
 # What we accept when CREATING a user
@@ -23,5 +24,8 @@ class UserResponse(BaseModel):
     email: str
     created_at: datetime
 
-    class Config:
-        from_attributes = True  # allows ORM objects later
+    # class Config:
+    #     from_attributes = True  # allows ORM objects later
+
+
+model_config = ConfigDict(from_attributes=True)

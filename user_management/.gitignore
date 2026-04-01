@@ -3,3 +3,4 @@
 .pytest_cache/
 *.log
 .ruff_cache/
+.env

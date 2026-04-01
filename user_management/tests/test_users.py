@@ -3,6 +3,18 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from database import Base, get_db
 from main import app
+import pytest
+from sqlalchemy import text
+
+
+@pytest.fixture(autouse=True)
+def clean_db():
+    yield
+    db = TestingSessionLocal()
+    db.execute(text("DELETE FROM users"))
+    db.commit()
+    db.close()
+
 
 # separate test database — never test against your real DB
 TEST_DATABASE_URL = (

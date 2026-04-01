@@ -4,13 +4,14 @@ from database import get_db
 from models.user import User
 from schemas.user import UserCreate, UserUpdate, UserResponse
 from typing import List
+from auth.hashing import hash_password
+from auth.dependencies import get_current_user
 
 router = APIRouter(prefix="/users", tags=["users"])
 
 
 @router.post("/", response_model=UserResponse, status_code=201)
 def create_user(user: UserCreate, db: Session = Depends(get_db)):
-    # check if email already exists
     existing = db.query(User).filter(User.email == user.email).first()
     if existing:
         raise HTTPException(status_code=400, detail="Email already registered")
@@ -18,7 +19,7 @@ def create_user(user: UserCreate, db: Session = Depends(get_db)):
     new_user = User(
         name=user.name,
         email=user.email,
-        password=user.password,  # plain text for now, Week 2 we hash
+        password=hash_password(user.password),  # ← hashed now
     )
     db.add(new_user)
     db.commit()
@@ -29,6 +30,11 @@ def create_user(user: UserCreate, db: Session = Depends(get_db)):
 @router.get("/", response_model=List[UserResponse])
 def get_all_users(db: Session = Depends(get_db)):
     return db.query(User).all()
+
+
+@router.get("/me", response_model=UserResponse)
+def get_me(current_user: User = Depends(get_current_user)):
+    return current_user
 
 
 @router.get("/{user_id}", response_model=UserResponse)
