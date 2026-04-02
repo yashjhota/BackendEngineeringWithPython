@@ -1,0 +1,11 @@
+Session 1 complete. Here's what you built today:
+
+Redis caching on GET /users/{id} — cache hit/miss pattern  cache.py
+Key namespacing — user:{id} to avoid collisions
+Cache invalidation on update and delete
+Rate limiting — 429 after 10 requests per minute    auth/rate_limiter.py
+3 tests all green
+
+02-04-2026
+
+---------------------------------
