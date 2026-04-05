@@ -8,15 +8,22 @@ from auth.hashing import hash_password
 from auth.dependencies import get_current_user
 from cache import get_cache, set_cache, delete_cache
 from auth.rate_limiter import rate_limit
-
+from fastapi import BackgroundTasks
+from utils.tasks import send_welcome_email, log_user_action
+from utils.logger import logger
 
 router = APIRouter(prefix="/users", tags=["users"])
 
 
 @router.post("/", response_model=UserResponse, status_code=201)
-def create_user(user: UserCreate, db: Session = Depends(get_db)):
+def create_user(
+    user: UserCreate,
+    db: Session = Depends(get_db),
+    background_tasks: BackgroundTasks = BackgroundTasks(),
+):
     existing = db.query(User).filter(User.email == user.email).first()
     if existing:
+        logger.warning(f"Duplicate email attempt: {user.email}")
         raise HTTPException(status_code=400, detail="Email already registered")
 
     new_user = User(
@@ -27,6 +34,12 @@ def create_user(user: UserCreate, db: Session = Depends(get_db)):
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
+    logger.info(f"New user created: {new_user.id} - {new_user.email}")
+
+    # these run AFTER response is sent
+    background_tasks.add_task(send_welcome_email, new_user.email, new_user.name)
+    background_tasks.add_task(log_user_action, new_user.id, "register")
+
     return new_user
 
 
